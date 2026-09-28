@@ -36,8 +36,8 @@ class UmajinCommand(sublime_plugin.TextCommand):
     if not callback:
       callback = self.generic_done
 
-    thread = CommandThread(command, callback, **kwargs)
-    thread.start()
+    # thread = CommandThread(command, callback, **kwargs)  # CommandThread not available: import commented, lib/ missing
+    # thread.start()
 
     if show_status:
       message = kwargs.get('status_message', False) or ' '.join(command)
