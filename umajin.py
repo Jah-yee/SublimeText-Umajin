@@ -1,9 +1,8 @@
 import os
+import subprocess
+import threading
 import sublime
 import sublime_plugin
-
-
-#from lib.command_thread import CommandThread
 
 # Fun discovery: Sublime on windows still requires posix path separators.
 
@@ -36,8 +35,23 @@ class UmajinCommand(sublime_plugin.TextCommand):
     if not callback:
       callback = self.generic_done
 
-    # thread = CommandThread(command, callback, **kwargs)  # CommandThread not available: import commented, lib/ missing
-    # thread.start()
+    def run_in_thread(cmd, cb, **kw):
+        def target():
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    cwd=kw.get('working_dir'),
+                    capture_output=True,
+                    text=True,
+                    timeout=300,
+                )
+                cb((proc.stdout + proc.stderr).strip())
+            except Exception as e:
+                cb(str(e))
+        t = threading.Thread(target=target)
+        t.start()
+
+    run_in_thread(command, callback, **kwargs)
 
     if show_status:
       message = kwargs.get('status_message', False) or ' '.join(command)
